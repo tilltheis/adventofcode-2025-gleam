@@ -34,10 +34,14 @@ fn read_input(day: String) -> String {
   }
 }
 
+fn run(day: String, solve: fn(String) -> Int) -> Nil {
+  day |> read_input |> solve |> int.to_string |> io.println
+}
+
 pub fn main() -> Nil {
   case argv.load().arguments {
-    ["1", "1"] ->
-      io.println("01" |> read_input |> day01.part1 |> int.to_string())
+    ["1", "1"] -> run("01", day01.part1)
+    ["1", "2"] -> run("01", day01.part2)
     [_, _] -> {
       io.println_error("Puzzle not found.")
       exit(exit_code_puzzle_not_found)
