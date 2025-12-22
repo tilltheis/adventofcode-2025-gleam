@@ -1,5 +1,6 @@
 import argv
 import day01
+import day02
 import gleam/int
 import gleam/io
 import gleam/string
@@ -42,6 +43,7 @@ pub fn main() -> Nil {
   case argv.load().arguments {
     ["1", "1"] -> run("01", day01.part1)
     ["1", "2"] -> run("01", day01.part2)
+    ["2", "1"] -> run("02", day02.part1)
     [_, _] -> {
       io.println_error("Puzzle not found.")
       exit(exit_code_puzzle_not_found)
