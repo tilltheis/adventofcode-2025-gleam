@@ -1,43 +1,45 @@
-import gleam/bit_array
 import gleam/list
 import gleam/result
+import gleam/string
+import iv.{type Array}
 
 type Grid {
-  Grid(cells: BitArray, width: Int, height: Int)
+  Grid(cells: Array(Int), width: Int, height: Int)
 }
-
-const byte_at = 64
 
 const byte_linefeed = 10
 
+const byte_dot = 46
+
+const byte_at = 64
+
 fn grid_from_string(str: String) -> Grid {
-  let bytes = bit_array.from_string(str)
-  let index_of_newline_result =
-    list.range(0, bit_array.byte_size(bytes))
-    |> list.try_each(fn(i) {
-      let assert Ok(<<byte:int>>) = bit_array.slice(bytes, i, 1)
-      case byte {
-        b if b == byte_linefeed -> Error(i)
-        _ -> Ok(Nil)
-      }
-    })
-  let width = case index_of_newline_result {
-    Ok(Nil) -> bit_array.byte_size(bytes)
-    Error(i) -> i
-  }
-  let height = { bit_array.byte_size(bytes) + 1 } / { width + 1 }
+  let bytes =
+    str
+    |> string.to_utf_codepoints
+    |> list.map(string.utf_codepoint_to_int)
+    |> iv.from_list
+  let index_of_newline_result = bytes |> iv.index_of(byte_linefeed)
+  let width = result.unwrap(index_of_newline_result, iv.size(bytes))
+  let height = { iv.size(bytes) + 1 } / { width + 1 }
   Grid(bytes, width, height)
 }
 
-fn grid_get(grid: Grid, x: Int, y: Int) -> Result(Int, Nil) {
+fn grid_point_to_index(grid: Grid, x: Int, y: Int) -> Result(Int, Nil) {
   case x < 0 || x >= grid.width || y < 0 || y >= grid.height {
     True -> Error(Nil)
-    False -> {
-      let index = y * { grid.width + 1 } + x
-      let assert Ok(<<byte:int>>) = bit_array.slice(grid.cells, index, 1)
-      Ok(byte)
-    }
+    False -> Ok(y * { grid.width + 1 } + x)
   }
+}
+
+fn grid_get(grid: Grid, x: Int, y: Int) -> Result(Int, Nil) {
+  grid_point_to_index(grid, x, y) |> result.try(iv.get(grid.cells, _))
+}
+
+fn grid_set(grid: Grid, x: Int, y: Int, value: Int) -> Result(Grid, Nil) {
+  grid_point_to_index(grid, x, y)
+  |> result.try(iv.set(grid.cells, _, value))
+  |> result.map(fn(cells) { Grid(cells, grid.width, grid.height) })
 }
 
 const deltas = [
@@ -65,18 +67,46 @@ fn count_occupied_neighbors(grid: Grid, x: Int, y: Int) -> Int {
   |> list.length()
 }
 
-pub fn part1(input: String) -> Int {
-  let grid = grid_from_string(input)
+fn find_removable_points(grid: Grid) -> List(#(Int, Int)) {
   list.range(0, grid.height - 1)
   |> list.flat_map(fn(y) {
     list.range(0, grid.width - 1)
     |> list.filter_map(fn(x) {
       case grid_get(grid, x, y) {
-        Ok(byte) if byte == byte_at -> Ok(count_occupied_neighbors(grid, x, y))
+        Ok(byte) if byte == byte_at ->
+          case count_occupied_neighbors(grid, x, y) < 4 {
+            True -> Ok(#(x, y))
+            False -> Error(Nil)
+          }
         _ -> Error(Nil)
       }
     })
   })
-  |> list.filter(fn(n) { n < 4 })
-  |> list.length()
+}
+
+pub fn part1(input: String) -> Int {
+  grid_from_string(input) |> find_removable_points |> list.length
+}
+
+fn fixpoint(x: a, f: fn(a) -> a) -> a {
+  case f(x) {
+    y if y == x -> y
+    y -> fixpoint(y, f)
+  }
+}
+
+type State {
+  State(grid: Grid, removed_count: Int)
+}
+
+fn step(state: State) -> State {
+  find_removable_points(state.grid)
+  |> list.fold(state, fn(acc, point) {
+    let assert Ok(new_grid) = grid_set(acc.grid, point.0, point.1, byte_dot)
+    State(new_grid, acc.removed_count + 1)
+  })
+}
+
+pub fn part2(input: String) -> Int {
+  fixpoint(State(grid_from_string(input), 0), step).removed_count
 }
