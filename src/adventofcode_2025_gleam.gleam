@@ -1,12 +1,14 @@
 import argv
 import day01
 import day02
+import day03
 import gleam/int
 import gleam/io
 import gleam/string
 import simplifile
 
 @external(erlang, "erlang", "halt")
+@external(javascript, "./ffi.mjs", "exit")
 fn exit(code: Int) -> Nil
 
 type TimeUnit {
@@ -16,6 +18,7 @@ type TimeUnit {
 @external(erlang, "erlang", "monotonic_time")
 fn erlang_monotonic_time(unit: TimeUnit) -> Int
 
+@external(javascript, "./ffi.mjs", "monotonic_time_millis")
 fn monotonic_time_millis() -> Int {
   erlang_monotonic_time(Millisecond)
 }
@@ -68,6 +71,7 @@ pub fn main() -> Nil {
     ["1", "2"] -> run("01", day01.part2)
     ["2", "1"] -> run("02", day02.part1)
     ["2", "2"] -> run("02", day02.part2)
+    ["3", "1"] -> run("03", day03.part1)
     [_, _] -> puzzle_not_found()
     _ -> usage()
   }
