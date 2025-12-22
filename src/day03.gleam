@@ -25,16 +25,31 @@ fn max_battery(
   })
 }
 
-fn max_joltage(bank: BitArray) -> Int {
+fn max_joltage(bank: BitArray, required_battery_count: Int) -> Int {
   let byte_count = bit_array.byte_size(bank)
-  assert byte_count >= 2
-  let assert Ok(#(tens, i)) = max_battery(bank, 0, byte_count - 2)
-  let assert Ok(#(ones, _)) = max_battery(bank, i + 1, byte_count - 1)
-  tens * 10 + ones
+  assert byte_count >= required_battery_count
+  let #(joltage, _) =
+    list.range(byte_count - required_battery_count, byte_count - 1)
+    |> list.fold(#(0, 0), fn(acc, end_index) {
+      let #(joltage, start_index) = acc
+      let assert Ok(#(n, i)) = max_battery(bank, start_index, end_index)
+      #(joltage * 10 + n, i + 1)
+    })
+  joltage
+}
+
+fn solve(input: String, required_battery_count: Int) -> Int {
+  input
+  |> parse_input
+  |> list.fold(0, fn(sum, row) {
+    sum + max_joltage(row, required_battery_count)
+  })
 }
 
 pub fn part1(input: String) -> Int {
-  input
-  |> parse_input
-  |> list.fold(0, fn(sum, row) { sum + max_joltage(row) })
+  solve(input, 2)
+}
+
+pub fn part2(input: String) -> Int {
+  solve(input, 12)
 }

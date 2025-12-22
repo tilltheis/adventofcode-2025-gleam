@@ -8,3 +8,7 @@ const input = "987654321111111
 pub fn day03_1_test() {
   assert day03.part1(input) == 357
 }
+
+pub fn day03_2_test() {
+  assert day03.part2(input) == 3_121_910_778_619
+}
