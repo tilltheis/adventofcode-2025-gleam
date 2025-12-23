@@ -15,3 +15,7 @@ const input = "3-5
 pub fn day05_1_test() {
   assert day05.part1(input) == 3
 }
+
+pub fn day05_2_test() {
+  assert day05.part2(input) == 14
+}

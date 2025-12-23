@@ -78,6 +78,7 @@ pub fn main() -> Nil {
     ["4", "1"] -> run("04", day04.part1)
     ["4", "2"] -> run("04", day04.part2)
     ["5", "1"] -> run("05", day05.part1)
+    ["5", "2"] -> run("05", day05.part2)
     [_, _] -> puzzle_not_found()
     _ -> usage()
   }
