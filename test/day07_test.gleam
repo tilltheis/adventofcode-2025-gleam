@@ -20,3 +20,7 @@ const input = ".......S.......
 pub fn day07_1_test() {
   assert day07.part1(input) == 21
 }
+
+pub fn day07_2_test() {
+  assert day07.part2(input) == 40
+}
