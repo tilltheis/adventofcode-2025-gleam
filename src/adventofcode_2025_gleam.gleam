@@ -3,6 +3,7 @@ import day01
 import day02
 import day03
 import day04
+import day05
 import gleam/int
 import gleam/io
 import gleam/string
@@ -76,6 +77,7 @@ pub fn main() -> Nil {
     ["3", "2"] -> run("03", day03.part2)
     ["4", "1"] -> run("04", day04.part1)
     ["4", "2"] -> run("04", day04.part2)
+    ["5", "1"] -> run("05", day05.part1)
     [_, _] -> puzzle_not_found()
     _ -> usage()
   }
