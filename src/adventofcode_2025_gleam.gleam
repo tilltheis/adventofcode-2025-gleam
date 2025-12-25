@@ -8,6 +8,7 @@ import day06
 import day07
 import day08
 import day09
+import day10
 import gleam/int
 import gleam/io
 import gleam/string
@@ -91,6 +92,7 @@ pub fn main() -> Nil {
     ["8", "2"] -> run("08", day08.part2)
     ["9", "1"] -> run("09", day09.part1)
     ["9", "2"] -> run("09", day09.part2)
+    ["10", "1"] -> run("10", day10.part1)
     [_, _] -> puzzle_not_found()
     _ -> usage()
   }
