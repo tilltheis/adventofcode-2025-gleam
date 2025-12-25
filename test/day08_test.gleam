@@ -22,5 +22,9 @@ const input = "162,817,812
 425,690,689"
 
 pub fn day08_1_test() {
-  assert day08.solve(input, 10) == 40
+  assert day08.solve1(input, 10) == 40
+}
+
+pub fn day08_2_test() {
+  assert day08.part2(input) == 25_272
 }

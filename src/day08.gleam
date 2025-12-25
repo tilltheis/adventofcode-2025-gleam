@@ -1,5 +1,6 @@
 import gleam/int
-import gleam/list
+import gleam/list.{Continue, Stop}
+import gleam/option.{None, Some}
 import gleam/set.{type Set}
 import gleam/string
 
@@ -43,7 +44,7 @@ fn insert_helper(
   points: Set(Point),
 ) -> List(Set(Point)) {
   case open_clusters {
-    [] -> [set.union(matched_cluster, points), ..closed_clusters]
+    [] -> [matched_cluster, ..closed_clusters]
     [cluster, ..clusters] -> {
       let intersection = set.intersection(points, cluster)
       case set.is_empty(intersection) {
@@ -66,16 +67,26 @@ fn insert_helper(
   }
 }
 
-pub fn solve(input: String, limit: Int) -> Int {
-  input
-  |> parse_input
+fn singleton_set(x: a) -> Set(a) {
+  set.from_list([x])
+}
+
+fn sorted_pairings(points: List(Point)) -> List(ClosestPairing) {
+  points
   |> list.combination_pairs
   |> list.map(fn(pair) {
     ClosestPairing(pair.0, pair.1, squared_distance(pair.0, pair.1))
   })
   |> list.sort(fn(a, b) { int.compare(a.squared_distance, b.squared_distance) })
+}
+
+pub fn solve1(input: String, limit: Int) -> Int {
+  let points = input |> parse_input
+  let initial_clusters = list.map(points, singleton_set)
+  points
+  |> sorted_pairings
   |> list.take(limit)
-  |> list.fold([], insert_pairing_into_clusters)
+  |> list.fold(initial_clusters, insert_pairing_into_clusters)
   |> list.map(set.size)
   |> list.sort(fn(a, b) { int.compare(-a, -b) })
   |> list.take(3)
@@ -83,5 +94,23 @@ pub fn solve(input: String, limit: Int) -> Int {
 }
 
 pub fn part1(input: String) -> Int {
-  solve(input, 1000)
+  solve1(input, 1000)
+}
+
+pub fn part2(input: String) -> Int {
+  let points = input |> parse_input
+  let initial_clusters = list.map(points, singleton_set)
+  let assert #(_, Some(last_inserted_pairing)) =
+    points
+    |> sorted_pairings
+    |> list.fold_until(#(initial_clusters, None), fn(acc, pairing) {
+      let #(clusters, _) = acc
+      let new_clusters = insert_pairing_into_clusters(clusters, pairing)
+      case new_clusters {
+        [_] -> Stop(#(new_clusters, Some(pairing)))
+        _ -> Continue(#(new_clusters, Some(pairing)))
+      }
+    })
+
+  last_inserted_pairing.a.0 * last_inserted_pairing.b.0
 }
