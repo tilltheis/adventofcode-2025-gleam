@@ -7,3 +7,7 @@ const input = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
 pub fn day10_1_test() {
   assert day10.part1(input) == 7
 }
+
+pub fn day10_2_test() {
+  assert day10.part2(input) == 33
+}
